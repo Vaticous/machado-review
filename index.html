@@ -556,15 +556,13 @@ function nextTip() {
 }
 
 function goToTip(i) {
-  // Hide box before repositioning to prevent flash
   const box = document.getElementById('ttBox');
   box.classList.remove('visible');
 
-  // Write content immediately
   const tip = TIPS[i];
-  document.getElementById('ttStep').textContent   = 'Step ' + (i+1) + ' of ' + TIPS.length;
-  document.getElementById('ttTitle').textContent  = tip.title;
-  document.getElementById('ttBody').textContent   = tip.body;
+  document.getElementById('ttStep').textContent    = 'Step ' + (i+1) + ' of ' + TIPS.length;
+  document.getElementById('ttTitle').textContent   = tip.title;
+  document.getElementById('ttBody').textContent    = tip.body;
   document.getElementById('ttNextBtn').textContent = i === TIPS.length - 1 ? 'Done \u2713' : 'Next \u2192';
   const dots = document.getElementById('ttDots');
   dots.innerHTML = '';
@@ -574,57 +572,69 @@ function goToTip(i) {
     dots.appendChild(d);
   });
 
-  // Scroll target into view, then measure after scroll settles
   const el = document.getElementById(tip.target);
-  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  setTimeout(function() { placeTip(i); }, 500);
+  const isMobile = window.innerWidth <= 600;
+  const TOOLTIP_RESERVED = isMobile ? 230 : 0;
+
+  // Manual scroll: center the element in the visible area above the pinned tooltip
+  var elRect = el.getBoundingClientRect();
+  var elAbsTop = elRect.top + window.scrollY;
+  var usableHeight = window.innerHeight - TOOLTIP_RESERVED;
+  var scrollTo = elAbsTop - (usableHeight / 2) + (elRect.height / 2);
+  window.scrollTo({ top: Math.max(0, scrollTo), behavior: 'smooth' });
+
+  setTimeout(function() { placeTip(i); }, 540);
 }
 
 function placeTip(i) {
-  const tip  = TIPS[i];
-  const el   = document.getElementById(tip.target);
-  const rect = el.getBoundingClientRect();
-  const PAD  = 12;
-  const GAP  = 14;
-  const BOX_W = 300;
-  const BOX_H = 210;
+  const tip     = TIPS[i];
+  const el      = document.getElementById(tip.target);
+  const rect    = el.getBoundingClientRect();
+  const PAD     = 12;
+  const GAP     = 14;
+  const BOX_W   = 300;
+  const BOX_H   = 215;
+  const isMobile = window.innerWidth <= 600;
+  const TOOLTIP_RESERVED = isMobile ? 230 : 0;
 
-  // Highlight — fixed so it moves with viewport
+  // Highlight — clamp height so it never overlaps the pinned tooltip
   const hl = document.getElementById('ttHighlight');
   hl.style.position = 'fixed';
-  hl.style.left     = (rect.left   - PAD) + 'px';
-  hl.style.top      = (rect.top    - PAD) + 'px';
-  hl.style.width    = (rect.width  + PAD * 2) + 'px';
-  hl.style.height   = (rect.height + PAD * 2) + 'px';
-
-  // Tooltip box — fixed, never off-screen
-  var left = rect.left + rect.width / 2 - BOX_W / 2;
-  var top;
-  if (tip.pos === 'below') {
-    top = rect.bottom + GAP;
-    if (top + BOX_H > window.innerHeight - 8) top = rect.top - BOX_H - GAP;
-  } else {
-    top = rect.top - BOX_H - GAP;
-    if (top < 8) top = rect.bottom + GAP;
-  }
-  left = Math.max(12, Math.min(left, window.innerWidth - BOX_W - 12));
-  top  = Math.max(8, top);
+  hl.style.left     = (rect.left - PAD) + 'px';
+  hl.style.top      = (rect.top  - PAD) + 'px';
+  hl.style.width    = (rect.width + PAD * 2) + 'px';
+  var maxHeight = (window.innerHeight - TOOLTIP_RESERVED) - rect.top + PAD;
+  hl.style.height   = Math.min(rect.height + PAD * 2, Math.max(40, maxHeight)) + 'px';
 
   const box = document.getElementById('ttBox');
   box.style.position = 'fixed';
-  // On mobile, always pin tooltip to bottom of screen
-  if (window.innerWidth <= 600) {
-    box.style.left   = '12px';
-    box.style.bottom = '12px';
+
+  if (isMobile) {
+    // Pin to bottom, full width, always visible above thumb
+    box.style.left   = '10px';
+    box.style.right  = '10px';
+    box.style.bottom = '10px';
     box.style.top    = 'auto';
-    box.style.width  = (window.innerWidth - 24) + 'px';
+    box.style.width  = 'auto';
   } else {
+    var left = rect.left + rect.width / 2 - BOX_W / 2;
+    var top;
+    if (tip.pos === 'below') {
+      top = rect.bottom + GAP;
+      if (top + BOX_H > window.innerHeight - 8) top = rect.top - BOX_H - GAP;
+    } else {
+      top = rect.top - BOX_H - GAP;
+      if (top < 8) top = rect.bottom + GAP;
+    }
+    left = Math.max(12, Math.min(left, window.innerWidth - BOX_W - 12));
+    top  = Math.max(8, top);
     box.style.left   = left + 'px';
     box.style.top    = top  + 'px';
     box.style.bottom = 'auto';
+    box.style.right  = 'auto';
     box.style.width  = BOX_W + 'px';
   }
-  // Fade in only after position is set
+
   requestAnimationFrame(function() { box.classList.add('visible'); });
 }
 
