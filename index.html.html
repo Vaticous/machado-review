@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Two-Year Compensation Review — Vítor Machado</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #f0f0ed;
+  min-height: 100vh;
+}
+
+/* ── LOGIN ── */
+#loginScreen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #0C447C 0%, #185FA5 60%, #378ADD 100%);
+}
+.login-box {
+  background: #fff;
+  border-radius: 16px;
+  padding: 44px 48px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+  width: 360px;
+  text-align: center;
+}
+.login-logo { font-size: 13px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #378ADD; margin-bottom: 8px; }
+.login-box h2 { font-size: 20px; font-weight: 700; color: #1a1a18; margin-bottom: 6px; }
+.login-box p { font-size: 13px; color: #888780; margin-bottom: 28px; }
+.login-box input[type="password"] {
+  width: 100%; padding: 12px 16px; border: 1.5px solid #e0e0db; border-radius: 8px;
+  font-size: 15px; color: #1a1a18; outline: none; transition: border-color 0.2s;
+  letter-spacing: 0.15em; margin-bottom: 14px;
+}
+.login-box input[type="password"]:focus { border-color: #378ADD; }
+.login-box input[type="password"].shake { animation: shake 0.35s ease; border-color: #E24B4A; }
+@keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)} 40%{transform:translateX(6px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)} }
+.login-btn { width: 100%; padding: 12px; background: #0C447C; color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+.login-btn:hover { background: #185FA5; }
+.login-error { font-size: 12px; color: #E24B4A; margin-top: 10px; min-height: 18px; }
+
+/* ── MAIN ── */
+#appScreen { display: none; padding: 32px 16px; }
+.page { background: #fff; border-radius: 14px; box-shadow: 0 2px 20px rgba(0,0,0,0.08); padding: 36px 40px; max-width: 860px; margin: 0 auto; }
+
+/* ── HELP BTN ── */
+#helpBtn {
+  position: fixed; bottom: 28px; right: 28px; width: 42px; height: 42px;
+  border-radius: 50%; background: #0C447C; color: #fff; border: none;
+  font-size: 18px; font-weight: 700; cursor: pointer;
+  box-shadow: 0 4px 12px rgba(12,68,124,0.35); z-index: 900;
+  display: none; align-items: center; justify-content: center; transition: background 0.2s;
+}
+#helpBtn:hover { background: #185FA5; }
+
+/* ── TOOLTIP ── */
+#tooltipOverlay { display: none; position: fixed; inset: 0; background: rgba(10,20,40,0.5); z-index: 1000; }
+.tooltip-highlight { position: absolute; border-radius: 10px; box-shadow: 0 0 0 9999px rgba(10,20,40,0.5); pointer-events: none; transition: all 0.35s cubic-bezier(0.4,0,0.2,1); z-index: 1001; }
+.tooltip-box { position: fixed; background: #fff; border-radius: 12px; padding: 18px 20px; width: 290px; box-shadow: 0 8px 32px rgba(0,0,0,0.18); z-index: 1002; opacity: 0; transition: opacity 0.22s ease; pointer-events: none; }
+.tooltip-box.visible { opacity: 1; pointer-events: auto; }
+.tooltip-box .step-label { font-size: 10px; font-weight: 700; color: #378ADD; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; }
+.tooltip-box h4 { font-size: 15px; font-weight: 700; color: #1a1a18; margin-bottom: 6px; }
+.tooltip-box p { font-size: 13px; color: #555550; line-height: 1.5; margin-bottom: 16px; }
+.tooltip-nav { display: flex; justify-content: space-between; align-items: center; }
+.tooltip-nav .dots { display: flex; gap: 5px; }
+.tooltip-nav .dots span { width: 7px; height: 7px; border-radius: 50%; background: #ddd; transition: background 0.2s; }
+.tooltip-nav .dots span.active { background: #0C447C; }
+.tooltip-btn { padding: 8px 18px; border-radius: 7px; border: none; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+.tooltip-btn.next { background: #0C447C; color: #fff; }
+.tooltip-btn.next:hover { background: #185FA5; }
+.tooltip-btn.skip { background: #f0f0ed; color: #888780; }
+.tooltip-btn.skip:hover { background: #e4e4e0; }
+
+/* ── HEADER ── */
+.header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 28px; border-bottom: 1px solid #e8e8e4; padding-bottom: 20px; }
+.header h1 { font-size: 20px; font-weight: 700; color: #1a1a18; }
+.header p { font-size: 13px; color: #666660; margin-top: 4px; }
+.badge { font-size: 11px; padding: 4px 12px; border-radius: 20px; background: #E6F1FB; color: #0C447C; font-weight: 700; white-space: nowrap; margin-top: 4px; }
+
+/* ── SECTION LABEL ── */
+.section-label { font-size: 10.5px; font-weight: 700; color: #888780; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 12px; }
+
+/* ── METRIC TILES ── */
+.metric-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 28px; }
+.metric { background: #f4f4f1; border-radius: 10px; padding: 14px 16px; }
+.metric .mlabel { font-size: 11.5px; color: #888780; margin-bottom: 5px; }
+.metric .mvalue { font-size: 22px; font-weight: 700; color: #1a1a18; }
+.metric .msub { font-size: 11px; color: #aaa; margin-top: 3px; }
+.metric.accent { background: #E6F1FB; }
+.metric.accent .mvalue { color: #0C447C; }
+.metric.accent .mlabel { color: #378ADD; }
+.metric.warn { background: #FAEEDA; }
+.metric.warn .mvalue { color: #7A4508; }
+.metric.warn .mlabel { color: #BA7517; }
+
+/* ── CHARTS ── */
+.chart-wrap { position: relative; width: 100%; }
+.legend { display: flex; gap: 18px; margin-bottom: 10px; font-size: 12px; color: #666660; }
+.legend span { display: flex; align-items: center; gap: 6px; }
+.legend span .dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+
+/* ── CARDS ── */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 28px; }
+.card { border: 1px solid #e8e8e4; border-radius: 10px; padding: 18px; }
+.card h3 { font-size: 13px; font-weight: 700; color: #1a1a18; margin-bottom: 12px; }
+.row-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #f0f0ec; font-size: 13px; }
+.row-item:last-child { border-bottom: none; }
+.row-item .k { color: #666660; }
+.row-item .v { font-weight: 700; color: #1a1a18; }
+.row-item .v.green { color: #2A5E0A; }
+.row-item .v.red { color: #8B1D1D; }
+
+/* ── DIVIDER ── */
+.section-divider { border: none; border-top: 2px dashed #e0e0db; margin: 32px 0; }
+.pivot-label {
+  text-align: center; font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; color: #0C447C; background: #E6F1FB;
+  padding: 8px 20px; border-radius: 20px; display: inline-block;
+  margin: 0 auto 28px; display: flex; align-items: center; justify-content: center;
+}
+
+/* ── SLIDER CONTROL ── */
+.controls-section { background: #f7f7f4; border: 1.5px solid #e0e0db; border-radius: 12px; padding: 20px 24px; margin-bottom: 28px; }
+.controls-section .ctrl-title { font-size: 10.5px; font-weight: 700; color: #888780; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 16px; }
+.ctrl-group label { display: block; font-size: 12px; font-weight: 600; color: #444440; margin-bottom: 8px; }
+.ctrl-val { font-size: 20px; font-weight: 700; color: #0C447C; margin-bottom: 8px; }
+.ctrl-val span { font-size: 12px; font-weight: 500; color: #888780; margin-left: 6px; }
+input[type="range"] { width: 100%; accent-color: #0C447C; cursor: pointer; }
+.slider-ticks { display: flex; justify-content: space-between; font-size: 10px; color: #aaa; margin-top: 4px; }
+.slider-ticks .ref-tick { color: #0C447C; font-weight: 700; }
+
+/* ── BONUS MODELER ── */
+.bonus-modeler { margin-bottom: 28px; }
+.bonus-context {
+  background: #f7f7f4; border-left: 3px solid #0C447C;
+  border-radius: 0 8px 8px 0; padding: 14px 18px; margin-bottom: 20px;
+  font-size: 13px; color: #444440; line-height: 1.6;
+}
+.bonus-context strong { color: #0C447C; }
+.bonus-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
+.bonus-card {
+  border: 1.5px solid #e0e0db; border-radius: 12px; padding: 18px 16px;
+  text-align: center; transition: border-color 0.2s, box-shadow 0.2s;
+  position: relative; overflow: hidden;
+}
+.bonus-card.floor { border-color: #d0d0ca; }
+.bonus-card.target { border-color: #185FA5; box-shadow: 0 2px 12px rgba(24,95,165,0.12); }
+.bonus-card.target::before {
+  content: '★ PROPOSED';
+  position: absolute; top: 0; left: 0; right: 0;
+  background: #185FA5; color: #fff;
+  font-size: 9px; font-weight: 700; letter-spacing: 0.1em;
+  padding: 4px 0; text-align: center;
+}
+.bonus-card.target { padding-top: 28px; }
+.bonus-card.stretch { border-color: #e0e0db; }
+.bonus-card .bc-rate { font-size: 11px; font-weight: 700; color: #888780; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.06em; }
+.bonus-card .bc-burn { font-size: 12px; color: #888780; margin-bottom: 12px; }
+.bonus-card .bc-bonus { font-size: 11px; color: #888780; margin-bottom: 2px; }
+.bonus-card .bc-bonus-val { font-size: 18px; font-weight: 700; color: #1a1a18; margin-bottom: 8px; }
+.bonus-card .bc-total-label { font-size: 10px; color: #aaa; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 2px; }
+.bonus-card .bc-total { font-size: 24px; font-weight: 700; color: #0C447C; }
+.bonus-card .bc-vs { font-size: 11px; margin-top: 6px; font-weight: 600; }
+.bonus-card .bc-vs.up { color: #2A5E0A; }
+.bonus-card .bc-vs.same { color: #888780; }
+.bonus-card.floor .bc-total { color: #444440; }
+
+/* ── COMP COMPARISON CHART ── */
+.comp-chart-section { margin-bottom: 28px; }
+
+/* ── TIER ── */
+.tier-section { margin-bottom: 28px; }
+.tier-track { position: relative; height: 14px; border-radius: 7px; background: linear-gradient(to right, #9FE1CB 0%, #1D9E75 33%, #185FA5 66%, #0C447C 100%); margin: 0 0 10px; }
+.tier-divider { position: absolute; top: 0; width: 2px; height: 14px; background: rgba(255,255,255,0.5); }
+.tier-marker { position: absolute; top: -26px; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; transition: left 0.4s cubic-bezier(0.4,0,0.2,1); }
+.tier-marker .pin { width: 2px; height: 40px; margin-top: 26px; background: #042C53; }
+.you-badge { background: #042C53; color: #B5D4F4; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; white-space: nowrap; }
+.tier-label-row { display: flex; justify-content: space-between; margin-bottom: 16px; }
+.tier-label { font-size: 11.5px; color: #888780; text-align: center; width: 33%; }
+.tier-label strong { display: block; font-size: 13px; font-weight: 700; color: #1a1a18; margin-bottom: 2px; }
+.stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.stat { border-radius: 10px; padding: 14px 16px; text-align: center; }
+.stat .slabel { font-size: 11.5px; margin-bottom: 5px; }
+.stat .svalue { font-size: 20px; font-weight: 700; transition: all 0.3s; }
+.stat .ssub { font-size: 11px; margin-top: 3px; }
+.stat.good { background: #E1F5EE; }
+.stat.good .slabel { color: #0F6E56; }
+.stat.good .svalue { color: #064D3A; }
+.stat.good .ssub { color: #1D9E75; }
+.stat.you { background: #E6F1FB; }
+.stat.you .slabel { color: #378ADD; }
+.stat.you .svalue { color: #0C447C; }
+.stat.you .ssub { color: #185FA5; }
+.stat.delta { background: #FAEEDA; }
+.stat.delta .slabel { color: #BA7517; }
+.stat.delta .svalue { color: #5C3005; }
+.stat.delta .ssub { color: #854F0B; }
+
+/* ── FOOTER ── */
+.footer { font-size: 11px; color: #aaa; border-top: 1px solid #e8e8e4; padding-top: 14px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px; }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">Steinger, Greene & Feiner</div>
+    <h2>Compensation Review</h2>
+    <p>Enter your access code to continue</p>
+    <input type="password" id="pwInput" placeholder="••••••••" autocomplete="off">
+    <button class="login-btn" onclick="checkPassword()">Access →</button>
+    <div class="login-error" id="loginError"></div>
+  </div>
+</div>
+
+<!-- TOOLTIP -->
+<div id="tooltipOverlay">
+  <div class="tooltip-highlight" id="ttHighlight"></div>
+  <div class="tooltip-box" id="ttBox">
+    <div class="step-label" id="ttStep"></div>
+    <h4 id="ttTitle"></h4>
+    <p id="ttBody"></p>
+    <div class="tooltip-nav">
+      <button class="tooltip-btn skip" onclick="endTour()">Skip tour</button>
+      <div class="dots" id="ttDots"></div>
+      <button class="tooltip-btn next" id="ttNextBtn" onclick="nextTip()">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- HELP -->
+<button id="helpBtn" onclick="startTour()">?</button>
+
+<!-- APP -->
+<div id="appScreen">
+<div class="page">
+
+  <div class="header">
+    <div>
+      <h1>Two-Year Compensation Review</h1>
+      <p>Vítor Machado, Esq. &nbsp;·&nbsp; Steinger, Greene & Feiner &nbsp;·&nbsp; May 13, 2024 – May 13, 2026</p>
+    </div>
+    <span class="badge">Pre-litigation · WPB</span>
+  </div>
+
+  <!-- PRODUCTION SNAPSHOT -->
+  <div class="section-label">Production Snapshot</div>
+  <div class="metric-row">
+    <div class="metric accent">
+      <div class="mlabel">Total net fees (tracked)</div>
+      <div class="mvalue">$3.15M</div>
+      <div class="msub">Oct 2024 – Q1 2026</div>
+    </div>
+    <div class="metric accent">
+      <div class="mlabel">Cases resolved</div>
+      <div class="mvalue">158</div>
+      <div class="msub">Pre-suit, all files</div>
+    </div>
+    <div class="metric warn">
+      <div class="mlabel">Q1 2026 fees alone</div>
+      <div class="mvalue">$1.02M</div>
+      <div class="msub">Single-quarter peak</div>
+    </div>
+    <div class="metric">
+      <div class="mlabel">Avg. fee / case</div>
+      <div class="mvalue">$19.9K</div>
+      <div class="msub">Net attorney fee</div>
+    </div>
+  </div>
+
+  <!-- FEE CHART -->
+  <div style="margin-bottom:28px">
+    <div class="section-label">Fee Production By Period ($)</div>
+    <div class="legend">
+      <span><span class="dot" style="background:#378ADD"></span>Net attorney fees</span>
+      <span><span class="dot" style="background:#E24B4A"></span>Quarterly salary cost ($31,250)</span>
+    </div>
+    <div class="chart-wrap" style="height:200px">
+      <canvas id="feeChart"></canvas>
+    </div>
+  </div>
+
+  <!-- INFLATION + SALARY CARDS -->
+  <div class="two-col">
+    <div class="card">
+      <h3>Inflation Erosion Of Base Salary</h3>
+      <div class="row-item"><span class="k">Base salary at hire (May 2024)</span><span class="v">$125,000</span></div>
+      <div class="row-item"><span class="k">CPI-U, May 2024</span><span class="v">314.1</span></div>
+      <div class="row-item"><span class="k">CPI-U, April 2026 (latest)</span><span class="v">~333.0</span></div>
+      <div class="row-item"><span class="k">Cumulative inflation (2 yrs)</span><span class="v red">+6.0%</span></div>
+      <div class="row-item"><span class="k">Purchasing-power-adjusted salary</span><span class="v">$132,500</span></div>
+      <div class="row-item"><span class="k">Real dollar loss (annual)</span><span class="v red">−$7,500</span></div>
+    </div>
+    <div class="card">
+      <h3>Salary vs. Fee Production</h3>
+      <div class="row-item"><span class="k">Annual salary (fixed)</span><span class="v">$125,000</span></div>
+      <div class="row-item"><span class="k">Trailing 3-quarter run-rate (annualized)</span><span class="v">$1.57M</span></div>
+      <div class="row-item"><span class="k">Salary as % of fees</span><span class="v green">7.9%</span></div>
+      <div class="row-item"><span class="k">Q1 2026 fees alone</span><span class="v">$1.02M</span></div>
+      <div class="row-item"><span class="k">Firm return on salary (est.)</span><span class="v green">~12.6×</span></div>
+    </div>
+  </div>
+
+  <!-- TIER VISUAL -->
+  <div class="tier-section" id="tierSection">
+    <div class="section-label">Annual Fee Production — Where Vítor Lands</div>
+    <div style="position:relative; margin: 44px 0 10px;">
+      <div class="tier-track">
+        <div class="tier-divider" style="left:33.3%"></div>
+        <div class="tier-divider" style="left:66.6%"></div>
+        <div class="tier-marker" id="tierMarker" style="left:72%">
+          <span class="you-badge" id="tierBadge">Vítor — $2.91M</span>
+          <div class="pin"></div>
+        </div>
+      </div>
+    </div>
+    <div class="tier-label-row">
+      <div class="tier-label" style="text-align:left"><strong>Good</strong>Acceptable &amp; fair benchmark</div>
+      <div class="tier-label"><strong>Great</strong>$2M – $3M / yr</div>
+      <div class="tier-label" style="text-align:right"><strong>Exceptional</strong>$3M+ / yr</div>
+    </div>
+    <div class="stat-row">
+      <div class="stat good">
+        <div class="slabel">Firm solid-performance benchmark</div>
+        <div class="svalue">$2.0M</div>
+        <div class="ssub">$500K/quarter annualized</div>
+      </div>
+      <div class="stat you">
+        <div class="slabel">Vítor's annualized production</div>
+        <div class="svalue" id="tierProdVal">$2.91M</div>
+        <div class="ssub">Avg. of last 4 quarters × 4</div>
+      </div>
+      <div class="stat delta">
+        <div class="slabel">Above benchmark</div>
+        <div class="svalue" id="tierAbove">+$910K</div>
+        <div class="ssub" id="tierAbovePct">+45.5% over benchmark</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DIVIDER / PIVOT -->
+  <hr class="section-divider">
+  <div style="text-align:center; margin-bottom:28px;">
+    <span class="pivot-label">
+      The case above establishes why compensation realignment is warranted.
+      What follows models how — through bonus structure, not base salary.
+    </span>
+  </div>
+
+  <!-- SLIDER -->
+  <div class="controls-section" id="sliderSection">
+    <div class="ctrl-title">Adjust Quarterly Fee Production To Model Different Scenarios</div>
+    <div class="ctrl-group">
+      <label>Quarterly Fee Production (per quarter)</label>
+      <div class="ctrl-val" id="sliderVal">$728K <span>/ quarter · $2.91M annualized</span></div>
+      <input type="range" id="runRateSlider" min="500000" max="1100000" step="5000" value="728000">
+      <div class="slider-ticks">
+        <span>$500K</span>
+        <span class="ref-tick">◆ $728K avg. (last 4 quarters)</span>
+        <span>$1.1M</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- BONUS MODELER -->
+  <div class="bonus-modeler" id="bonusSection">
+    <div class="section-label">Bonus Structure Scenarios — $150K Quarterly Burn</div>
+    <div class="bonus-context">
+      Base salary is fixed at <strong>$125,000</strong>. The current bonus structure carries a <strong>$250K quarterly burn</strong> at <strong>8%</strong> of net fees above that threshold. The scenarios below model a reduced <strong>$150K burn</strong> — meaning the firm begins paying Vítor a bonus sooner, aligned with the production level he has consistently demonstrated. The firm only pays more when Vítor produces more.
+    </div>
+    <div class="bonus-grid">
+      <!-- FLOOR -->
+      <div class="bonus-card floor" id="card0">
+        <div class="bc-rate">8% Rate</div>
+        <div class="bc-burn">$150K burn · floor scenario</div>
+        <div class="bc-bonus">Annual bonus</div>
+        <div class="bc-bonus-val" id="bonus0">—</div>
+        <div class="bc-total-label">Total comp</div>
+        <div class="bc-total" id="total0">—</div>
+        <div class="bc-vs" id="vs0">—</div>
+      </div>
+      <!-- TARGET / PROPOSED -->
+      <div class="bonus-card target" id="card1">
+        <div class="bc-rate">8.5% Rate</div>
+        <div class="bc-burn">$150K burn · proposed</div>
+        <div class="bc-bonus">Annual bonus</div>
+        <div class="bc-bonus-val" id="bonus1">—</div>
+        <div class="bc-total-label">Total comp</div>
+        <div class="bc-total" id="total1">—</div>
+        <div class="bc-vs" id="vs1">—</div>
+      </div>
+      <!-- STRETCH -->
+      <div class="bonus-card stretch" id="card2">
+        <div class="bc-rate">9% Rate</div>
+        <div class="bc-burn">$150K burn · stretch</div>
+        <div class="bc-bonus">Annual bonus</div>
+        <div class="bc-bonus-val" id="bonus2">—</div>
+        <div class="bc-total-label">Total comp</div>
+        <div class="bc-total" id="total2">—</div>
+        <div class="bc-vs" id="vs2">—</div>
+      </div>
+    </div>
+    <p style="font-size:11px;color:#aaa;margin-top:4px;">★ Proposed ask. All scenarios shown at the quarterly production level set by the slider above. Current structure shown for comparison.</p>
+  </div>
+
+  <!-- COMP COMPARISON CHART -->
+  <div class="comp-chart-section" id="compChartSection">
+    <div class="section-label">Total Annual Compensation — Current vs. Proposed Scenarios</div>
+    <p style="font-size:12px;color:#888780;margin-bottom:14px;" id="compSubtitle">At $728K/quarter production (last 4-quarter average) — what Vítor takes home and what the firm retains under each structure.</p>
+    <div class="chart-wrap" style="height:320px">
+      <canvas id="compChart"></canvas>
+    </div>
+  </div>
+
+  <div class="footer">
+    <span>Trailing 3-quarter run-rate (Q3 2025–Q1 2026, annualized) &nbsp;·&nbsp; CPI-U source: BLS (1982–84=100) &nbsp;·&nbsp; Apr 2026 CPI-U ~333.0 (3.8% YoY, BLS May 12, 2026) &nbsp;·&nbsp; Bonus scenarios modeled at selected quarterly production level</span>
+    <span>Prepared May 13, 2026</span>
+  </div>
+
+</div>
+</div>
+
+<script>
+/* ══ PASSWORD ══ */
+document.getElementById('pwInput').addEventListener('keydown', e => { if (e.key === 'Enter') checkPassword(); });
+
+function checkPassword() {
+  const val = document.getElementById('pwInput').value;
+  if (val === 'SGF2026') {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('appScreen').style.display = 'block';
+    const hb = document.getElementById('helpBtn');
+    hb.style.display = 'flex';
+    initCharts();
+    updateAll();
+    setTimeout(startTour, 900);
+  } else {
+    const inp = document.getElementById('pwInput');
+    inp.classList.add('shake');
+    document.getElementById('loginError').textContent = 'Incorrect password. Please try again.';
+    setTimeout(() => inp.classList.remove('shake'), 400);
+    inp.value = '';
+  }
+}
+
+/* ══ TOUR ══ */
+const TIPS = [
+  { target: 'sliderSection',    title: 'Production Slider',            body: 'The slider opens at $728K/quarter — Vítor\'s average across the last four quarters. Drag left to stress-test down to the $500K/quarter comparison floor, or right to model higher production. All bonus cards and the chart update instantly.',                                                                           pos: 'below' },
+  { target: 'bonusSection',     title: 'Bonus Structure Scenarios',     body: 'Three scenarios under a proposed $150K quarterly burn — 8% (floor), 8.5% (proposed ask), and 9% (stretch). Each card shows annual bonus, total comp, and the improvement over the current structure.',                                              pos: 'above' },
+  { target: 'compChartSection', title: 'Compensation Comparison Chart', body: 'Side-by-side view of what Vítor takes home and what the firm retains under each structure. The firm pays more only when Vítor produces more — the cost is always variable, never fixed.',                                                             pos: 'above' },
+  { target: 'tierSection',      title: 'Performance Tier',              body: 'This anchors the entire conversation — showing where Vítor\'s production lands relative to the firm\'s solid-performance benchmark. The bonus restructure is the logical response to this level of consistent output.',                              pos: 'below' }
+];
+
+let currentTip = 0;
+
+function startTour() {
+  currentTip = 0;
+  document.getElementById('tooltipOverlay').style.display = 'block';
+  goToTip(0);
+}
+
+function endTour() {
+  document.getElementById('tooltipOverlay').style.display = 'none';
+}
+
+function nextTip() {
+  if (currentTip < TIPS.length - 1) { currentTip++; goToTip(currentTip); }
+  else endTour();
+}
+
+function goToTip(i) {
+  // Hide box before repositioning to prevent flash
+  const box = document.getElementById('ttBox');
+  box.classList.remove('visible');
+
+  // Write content immediately
+  const tip = TIPS[i];
+  document.getElementById('ttStep').textContent   = 'Step ' + (i+1) + ' of ' + TIPS.length;
+  document.getElementById('ttTitle').textContent  = tip.title;
+  document.getElementById('ttBody').textContent   = tip.body;
+  document.getElementById('ttNextBtn').textContent = i === TIPS.length - 1 ? 'Done \u2713' : 'Next \u2192';
+  const dots = document.getElementById('ttDots');
+  dots.innerHTML = '';
+  TIPS.forEach(function(_, idx) {
+    const d = document.createElement('span');
+    if (idx === i) d.classList.add('active');
+    dots.appendChild(d);
+  });
+
+  // Scroll target into view, then measure after scroll settles
+  const el = document.getElementById(tip.target);
+  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  setTimeout(function() { placeTip(i); }, 500);
+}
+
+function placeTip(i) {
+  const tip  = TIPS[i];
+  const el   = document.getElementById(tip.target);
+  const rect = el.getBoundingClientRect();
+  const PAD  = 12;
+  const GAP  = 14;
+  const BOX_W = 300;
+  const BOX_H = 210;
+
+  // Highlight — fixed so it moves with viewport
+  const hl = document.getElementById('ttHighlight');
+  hl.style.position = 'fixed';
+  hl.style.left     = (rect.left   - PAD) + 'px';
+  hl.style.top      = (rect.top    - PAD) + 'px';
+  hl.style.width    = (rect.width  + PAD * 2) + 'px';
+  hl.style.height   = (rect.height + PAD * 2) + 'px';
+
+  // Tooltip box — fixed, never off-screen
+  var left = rect.left + rect.width / 2 - BOX_W / 2;
+  var top;
+  if (tip.pos === 'below') {
+    top = rect.bottom + GAP;
+    if (top + BOX_H > window.innerHeight - 8) top = rect.top - BOX_H - GAP;
+  } else {
+    top = rect.top - BOX_H - GAP;
+    if (top < 8) top = rect.bottom + GAP;
+  }
+  left = Math.max(12, Math.min(left, window.innerWidth - BOX_W - 12));
+  top  = Math.max(8, top);
+
+  const box = document.getElementById('ttBox');
+  box.style.position = 'fixed';
+  box.style.left     = left + 'px';
+  box.style.top      = top  + 'px';
+  box.style.width    = BOX_W + 'px';
+  // Fade in only after position is set
+  requestAnimationFrame(function() { box.classList.add('visible'); });
+}
+
+/* ══ STATE ══ */
+let quarterlyFees = 728000;
+const BURN = 150000;
+const CURRENT_BURN = 250000;
+const CURRENT_RATE = 0.08;
+const RATES = [0.08, 0.085, 0.09];
+const BASE_SAL = 125000;
+
+/* ══ HELPERS ══ */
+function calcBonus(qFees, burn, rate) {
+  const aboveBurn = Math.max(0, qFees - burn);
+  return aboveBurn * rate * 4;
+}
+function fmtDollar(n) {
+  if (n >= 1000000) return '$' + (n/1000000).toFixed(3).replace(/\.?0+$/,'') + 'M';
+  return '$' + Math.round(n).toLocaleString();
+}
+function fmtK(n) {
+  return '$' + Math.round(n/1000) + 'K';
+}
+
+/* ══ CHARTS ══ */
+let feeChart, compChart;
+const textColor = '#888780';
+const gridColor = 'rgba(0,0,0,0.06)';
+
+function initCharts() {
+  feeChart = new Chart(document.getElementById('feeChart'), {
+    type: 'bar',
+    data: {
+      labels: ['Oct 24','Nov 24','Dec 24','Jan 25','Feb 25','Mar 25','Q2 25','Q3 25','Q4 25','Q1 26'],
+      datasets: [
+        { label: 'Net attorney fees', data: [2538,14983,153333,122767,81128,212356,619814,820250,455930,1020000], backgroundColor: '#378ADD', borderRadius: 4, order: 2 },
+        { label: 'Salary cost', data: Array(10).fill(31250), type: 'line', borderColor: '#E24B4A', borderWidth: 2, pointRadius: 0, tension: 0, borderDash: [5,4], fill: false, order: 1 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => '$' + Math.round(ctx.raw).toLocaleString() } } },
+      scales: {
+        x: { ticks: { color: textColor, font: { size: 11 }, autoSkip: false, maxRotation: 45 }, grid: { color: gridColor } },
+        y: { ticks: { color: textColor, font: { size: 11 }, callback: v => '$' + (v >= 1000000 ? (v/1000000).toFixed(1)+'M' : Math.round(v/1000)+'K') }, grid: { color: gridColor } }
+      }
+    }
+  });
+
+  compChart = new Chart(document.getElementById('compChart'), {
+    type: 'bar',
+    data: buildCompData(),
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      animation: { duration: 400 },
+      plugins: {
+        legend: { display: true, position: 'bottom', labels: { color: textColor, font: { size: 12 }, boxWidth: 12, padding: 16 } },
+        tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': $' + Math.round(ctx.raw).toLocaleString() } }
+      },
+      scales: {
+        x: { ticks: { color: textColor, font: { size: 12 } }, grid: { display: false } },
+        y: { ticks: { color: textColor, font: { size: 11 }, callback: v => '$' + (v >= 1000000 ? (v/1000000).toFixed(2)+'M' : Math.round(v/1000)+'K') }, grid: { color: gridColor } }
+      }
+    }
+  });
+}
+
+function buildCompData() {
+  const qFees = quarterlyFees;
+  const annualFees = qFees * 4;
+
+  const currentBonus = calcBonus(qFees, CURRENT_BURN, CURRENT_RATE);
+  const currentTotal = BASE_SAL + currentBonus;
+  const currentFirmNet = annualFees - currentTotal;
+
+  const scenarios = RATES.map(r => {
+    const bonus = calcBonus(qFees, BURN, r);
+    const total = BASE_SAL + bonus;
+    const firmNet = annualFees - total;
+    return { bonus, total, firmNet };
+  });
+
+  const labels = ['Current\n($250K burn / 8%)', '$150K burn\n8% (floor)', '$150K burn\n8.5% ★', '$150K burn\n9% (stretch)'];
+  const vitorComp = [currentTotal, ...scenarios.map(s => s.total)];
+  const firmNet = [currentFirmNet, ...scenarios.map(s => s.firmNet)];
+
+  return {
+    labels,
+    datasets: [
+      { label: "Vítor's total compensation", data: vitorComp, backgroundColor: ['#9DB8D2','#378ADD','#185FA5','#0C447C'], borderRadius: 6 },
+      { label: 'Firm net fees retained', data: firmNet, backgroundColor: ['#F5C6C6','#FAEEDA','#FAEEDA','#FAEEDA'], borderRadius: 6, borderWidth: 1, borderColor: ['#E24B4A','#F5A623','#F5A623','#F5A623'] }
+    ]
+  };
+}
+
+/* ══ UPDATE ══ */
+function updateAll() {
+  const qFees = quarterlyFees;
+  const annualFees = qFees * 4;
+  const currentBonus = calcBonus(qFees, CURRENT_BURN, CURRENT_RATE);
+  const currentTotal = BASE_SAL + currentBonus;
+
+  // Bonus cards
+  RATES.forEach((rate, i) => {
+    const bonus = calcBonus(qFees, BURN, rate);
+    const total = BASE_SAL + bonus;
+    const diff = total - currentTotal;
+    document.getElementById(`bonus${i}`).textContent = fmtDollar(bonus) + '/yr';
+    document.getElementById(`total${i}`).textContent = fmtDollar(total);
+    const vsEl = document.getElementById(`vs${i}`);
+    if (diff > 0) {
+      vsEl.textContent = '+' + fmtDollar(diff) + ' vs. current';
+      vsEl.className = 'bc-vs up';
+    } else if (diff === 0) {
+      vsEl.textContent = 'Same as current';
+      vsEl.className = 'bc-vs same';
+    } else {
+      vsEl.textContent = fmtDollar(diff) + ' vs. current';
+      vsEl.className = 'bc-vs';
+    }
+  });
+
+  // Subtitle
+  const qLabel = qFees >= 1000000 ? '$' + (qFees/1000000).toFixed(2) + 'M' : '$' + Math.round(qFees/1000) + 'K';
+  document.getElementById('compSubtitle').textContent = `At ${qLabel}/quarter production — what Vítor takes home and what the firm retains under each structure.`;
+
+  // Comp chart
+  compChart.data = buildCompData();
+  compChart.update();
+
+  // Tier
+  const annualized = annualFees;
+  const benchmark = 2000000;
+  const above = annualized - benchmark;
+  const abovePct = ((above / benchmark) * 100).toFixed(1);
+  document.getElementById('tierProdVal').textContent = fmtDollar(annualized);
+  document.getElementById('tierBadge').textContent = 'Vítor — ' + fmtDollar(annualized);
+  document.getElementById('tierAbove').textContent = (above >= 0 ? '+' : '') + fmtDollar(above);
+  document.getElementById('tierAbovePct').textContent = (above >= 0 ? '+' : '') + abovePct + '% over benchmark';
+
+  // Tier marker
+  const MIN = 500000*4, MAX = 3000000;
+  const clamp = Math.min(Math.max((annualized - MIN) / (MAX - MIN), 0), 1);
+  document.getElementById('tierMarker').style.left = (clamp * 100).toFixed(1) + '%';
+}
+
+/* ══ SLIDER ══ */
+document.getElementById('runRateSlider').addEventListener('input', function() {
+  quarterlyFees = parseInt(this.value);
+  const qLabel = quarterlyFees >= 1000000
+    ? '$' + (quarterlyFees/1000000).toFixed(2) + 'M'
+    : '$' + Math.round(quarterlyFees/1000) + 'K';
+  const annLabel = (quarterlyFees*4) >= 1000000
+    ? '$' + ((quarterlyFees*4)/1000000).toFixed(2) + 'M'
+    : '$' + Math.round(quarterlyFees*4/1000) + 'K';
+  document.getElementById('sliderVal').innerHTML = `${qLabel} <span>/ quarter · ${annLabel} annualized</span>`;
+  updateAll();
+});
+</script>
+</body>
+</html>
